@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { uploadFile } from '../api';
 
 export const useFileProcessor = () => {
   const [file, setFile] = useState(null);
@@ -28,6 +29,8 @@ export const useFileProcessor = () => {
 
     try {
       // Simulación de procesamiento en sistema distribuido (2.5 segundos)
+      const response = await uploadFile(file);
+
       await new Promise(resolve => setTimeout(resolve, 2500));
 
       const simulatedParts = Array.from({ length: 5 }, (_, i) => ({
