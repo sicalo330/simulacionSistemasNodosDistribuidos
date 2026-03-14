@@ -1,4 +1,5 @@
 import os
+import requests
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -6,7 +7,6 @@ from rest_framework import status
 
 from .models import Message
 from .serializers import MessageSerializer
-from .fileSplitter import fileSplitter
 
 
 @api_view(['GET', 'POST'])
@@ -17,16 +17,50 @@ def messages(request):
         serializer = MessageSerializer(messages, many=True)
         return Response(serializer.data)
 
+
     if request.method == 'POST':
-        serializer = MessageSerializer(data=request.data)
-    #{'id': 5, 'text': 'SuperPrueba.txt', 'file': '/media/uploads/SuperPrueba_mU4HhvZ.txt', 'created_at': '2026-03-10T19:25:54.125444Z'}
-        if serializer.is_valid():
-            serializer.save()
-            
-            file_path = serializer.data['file']#'/media/uploads/SuperPrueba_mU4HhvZ.txt'
-            file_name = os.path.basename(file_path)# SuperPrueba_mU4HhvZ.txt
 
-            fileSplitter(file_path,file_name) 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Obtener archivo enviado desde el frontend
+        archivo = request.FILES.get('file')
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not archivo:
+            return Response({"error": "No se recibió archivo"}, status=400)
+
+        print("Tipo de archivo:", archivo.content_type)
+
+        # Leer el archivo UNA SOLA VEZ
+        contenido = archivo.read()
+
+        respuestas = []
+
+        for i in range(1,6):
+
+            url = f"http://localhost:800{i}/api/receiveFiles/"
+
+            files = {
+                'file': (archivo.name, contenido, archivo.content_type)
+            }
+
+            try:
+                response = requests.post(url, files=files)
+
+                respuestas.append({
+                    "nodo": i,
+                    "status": response.status_code
+                })
+
+                print(f"Nodo {i} respondió:", response.status_code)
+
+            except requests.exceptions.RequestException as e:
+
+                respuestas.append({
+                    "nodo": i,
+                    "error": str(e)
+                })
+
+                print(f"Error con nodo {i}:", e)
+
+        return Response({
+            "mensaje": "Archivo enviado a los nodos",
+            "resultados": respuestas
+        })
