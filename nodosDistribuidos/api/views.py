@@ -43,9 +43,11 @@ def messages(request):
 
             try:
                 response = requests.post(url, files=files)
+                datos = response.json()
 
                 respuestas.append({
                     "nodo": i,
+                    "datos":datos,
                     "status": response.status_code
                 })
 
@@ -61,6 +63,5 @@ def messages(request):
                 print(f"Error con nodo {i}:", e)
 
         return Response({
-            "mensaje": "Archivo enviado a los nodos",
             "resultados": respuestas
         })

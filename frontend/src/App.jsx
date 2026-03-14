@@ -16,7 +16,7 @@ function App() {
     setShowError, 
     handleFileSelect, 
     clearFile, 
-    processFile 
+    processFile //En esta función se llama al django
   } = useFileProcessor();
 
   return (
