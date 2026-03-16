@@ -28,22 +28,27 @@ export const useFileProcessor = () => {
     setIsLoading(true);
 
     try {
-      // Simulación de procesamiento en sistema distribuido (2.5 segundos)
-      const response = await uploadFile(file);//Esta línea manda los datos
-      console.log(response)
+      // 1. Llamada real al backend de tus compañeros
+      const response = await uploadFile(file);
+      console.log("Respuesta del Backend:", response);
 
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // 2. Mapeamos los 'resultados' del backend a nuestra estructura de la UI
+      // El backend devuelve: { "resultados": [ { "nodo": 1, "datos": {...}, "status": 200 }, ... ] }
+      if (response && response.resultados) {
+        const realParts = response.resultados.map((res) => ({
+          id: res.nodo,
+          // Si el status es 200, mostramos éxito, si no, error
+          title: `Nodo ${res.nodo} - ${res.status === 200 ? '✅ Online' : '❌ Error'}`,
+          // Guardamos los datos recibidos (el JSON del nodo) para mostrarlo luego
+          content: res.datos || res.error || "Sin datos"
+        }));
 
-      const simulatedParts = Array.from({ length: 5 }, (_, i) => ({
-        id: i + 1,
-        title: `Nodo ${String.fromCharCode(65 + i)} - Parte ${i + 1}`,
-        content: `Contenido del fragmento ${i + 1} procesado exitosamente...`
-      }));
-
-      setSections(simulatedParts);
-      setIsProcessed(true);
+        setSections(realParts);
+        setIsProcessed(true);
+      }
     } catch (error) {
-      console.error("Error en la red:", error);
+      console.error("Error en la conexión con el Nodo Maestro:", error);
+      alert("Error: No se pudo conectar con el servidor Django.");
     } finally {
       setIsLoading(false);
     }
