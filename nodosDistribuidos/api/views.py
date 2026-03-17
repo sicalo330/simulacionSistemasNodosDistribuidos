@@ -12,10 +12,10 @@ from .serializers import MessageSerializer
 @api_view(['GET', 'POST'])
 def messages(request):
 
-    if request.method == 'GET':
-        messages = Message.objects.all()
-        serializer = MessageSerializer(messages, many=True)
-        return Response(serializer.data)
+#    if request.method == 'GET':
+#        messages = Message.objects.all()
+#        serializer = MessageSerializer(messages, many=True)
+#        return Response(serializer.data)
 
 
     if request.method == 'POST':
@@ -33,6 +33,7 @@ def messages(request):
 
         respuestas = []
 
+        #Aquío se mandan los datos
         for i in range(1,6):
 
             url = f"http://localhost:800{i}/api/receiveFiles/"
